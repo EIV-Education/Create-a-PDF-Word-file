@@ -1,3 +1,11 @@
+// Must be imported before any route modules: patches Express so a thrown/
+// rejected error inside an `async` route handler is forwarded to the error
+// middleware below instead of becoming an unhandled promise rejection.
+// Node terminates the whole process on those by default (since Node 15) —
+// without this, any Lark API error inside a route (auth failure, missing
+// permission, network blip) would crash the entire server, not just fail
+// that one request.
+import "express-async-errors";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
