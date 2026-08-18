@@ -2,6 +2,7 @@ import { Router } from "express";
 import { randomUUID } from "node:crypto";
 import { mappingsDb, templatesDb } from "../db.js";
 import { larkClient } from "../lark/client.js";
+import { fieldTypeLabel } from "../lark/fieldTypes.js";
 import { slugifyFieldNames } from "../utils/slugify.js";
 import { suggestFieldMatches } from "../mapping/autoMatch.js";
 import type { FieldMappingEntry, MappingRecord, OutputFormat } from "../models.js";
@@ -49,7 +50,21 @@ mappingsRouter.get("/suggest/:templateId", async (req, res) => {
   const tagByFieldName = slugifyFieldNames(fields.map((f) => f.field_name));
   const suggestions = suggestFieldMatches(template.placeholders, fields);
 
-  res.json({ suggestions, availableFields: fields.map((f) => ({ ...f, suggestedTag: tagByFieldName.get(f.field_name) })) });
+  // Normalize to the same { fieldId, fieldName, type, typeLabel } shape as
+  // GET /api/lark/fields (not Lark's raw snake_case field_id/field_name) -
+  // the Mapping page's <select> options are keyed by `fieldId`, so
+  // returning the raw shape here left every option's value undefined and
+  // the dropdown silently unable to show the (correctly matched!) selection.
+  res.json({
+    suggestions,
+    availableFields: fields.map((f) => ({
+      fieldId: f.field_id,
+      fieldName: f.field_name,
+      type: f.type,
+      typeLabel: fieldTypeLabel(f.type),
+      suggestedTag: tagByFieldName.get(f.field_name),
+    })),
+  });
 });
 
 mappingsRouter.post("/", async (req, res) => {
