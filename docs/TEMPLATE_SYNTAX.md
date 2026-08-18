@@ -7,16 +7,21 @@ template.
 
 ## The tag itself
 
-Every placeholder is a **tag** — the slugified, ASCII-safe version of your Lark field's name,
-e.g. the field "Customer Name" becomes the tag `Customer_Name`. The Mapping screen shows you the
-exact tag for every field ("Auto-match by name" fills this in for you); you can also type the tag
-yourself and the mapping step will map it back to the field of your choice regardless of what the
-field is actually called in Lark.
+Every placeholder is a **tag**, and you can type it exactly as your field is actually named —
+`{Tên khách hàng}`, `{SỐ_HĐLĐ}`, `{Customer Name}`, spaces/diacritics/uppercase and all. Whatever
+text you put between `{` and `}` is looked up as-is against the mapped field's value; there's no
+required format to match.
 
-Because tags are parsed as JS-like expressions, they must look like identifiers: letters, digits,
-underscores, not starting with a digit, no spaces or punctuation. Vietnamese names transliterate
-their diacritics (`Tên khách hàng` → `Ten_khach_hang`) rather than dropping them, so mapped tags
-stay readable.
+When you upload the template, the Mapping screen lists every tag it found so you can match each
+one to a Lark field ("Auto-match by name" does this automatically when the tag text is close
+enough to the field's actual name; otherwise pick it manually from the dropdown) — so the tag
+text doesn't need to match the Lark field's name at all, it's just a label you choose.
+
+The one thing to avoid: a tag that happens to contain `.`, `|`, `*`, `+`, `(`, `)`, `[`, `]`,
+quotes, `!`, `=`, `<`, `>` or `&` is treated as a formula/expression (see below) rather than a
+plain field reference. A field genuinely named e.g. `Giá (VNĐ)` still works — a tag that looks
+like an expression but isn't valid syntax quietly falls back to a plain literal lookup — but if
+you have a choice, avoid those characters in tag text to keep things predictable.
 
 ## 1. Plain values
 

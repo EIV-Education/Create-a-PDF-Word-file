@@ -24,10 +24,39 @@ describe("renderDocx", () => {
     expect(readDocxText(out)).toBe("Pen=10;Book=20;");
   });
 
+  it("substitutes raw Vietnamese field names with diacritics, uppercase and underscores (regression: production failure with {SỐ_HĐLĐ}, {HỌ_TÊN}, ...)", () => {
+    const docx = buildMinimalDocx([
+      "Số HĐLĐ: {SỐ_HĐLĐ}. Họ tên: {HỌ_TÊN}. Ngày sinh: {Ngày_Sinh}. Địa chỉ: {Địa_chỉ_thường_trú}.",
+    ]);
+    const out = renderDocx(docx, {
+      data: {
+        SỐ_HĐLĐ: "001/2026",
+        HỌ_TÊN: "Nguyễn Văn A",
+        Ngày_Sinh: "01/01/1990",
+        Địa_chỉ_thường_trú: "Hà Nội",
+      },
+    });
+    expect(readDocxText(out)).toBe(
+      "Số HĐLĐ: 001/2026. Họ tên: Nguyễn Văn A. Ngày sinh: 01/01/1990. Địa chỉ: Hà Nội."
+    );
+  });
+
+  it("substitutes a plain tag containing spaces, exactly as a raw (non-slugified) field name", () => {
+    const docx = buildMinimalDocx(["{Tên khách hàng} - {Số điện thoại}"]);
+    const out = renderDocx(docx, { data: { "Tên khách hàng": "Công ty ABC", "Số điện thoại": "0900000000" } });
+    expect(readDocxText(out)).toBe("Công ty ABC - 0900000000");
+  });
+
   it("supports dot-notation nested fields via the angular-expressions parser", () => {
     const docx = buildMinimalDocx(["Contact: {Customer.Name} ({Customer.Email})"]);
     const out = renderDocx(docx, { data: { Customer: { Name: "A Corp", Email: "a@corp.com" } } });
     expect(readDocxText(out)).toBe("Contact: A Corp (a@corp.com)");
+  });
+
+  it("falls back to a literal lookup when a tag merely looks like an expression but isn't valid syntax", () => {
+    const docx = buildMinimalDocx(["Giá: {Giá (VNĐ)}"]);
+    const out = renderDocx(docx, { data: { "Giá (VNĐ)": "150.000" } });
+    expect(readDocxText(out)).toBe("Giá: 150.000");
   });
 
   it("renders empty string for missing tags instead of throwing", () => {
