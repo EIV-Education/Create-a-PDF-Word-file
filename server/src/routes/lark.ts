@@ -59,10 +59,15 @@ larkRouter.get("/records", async (req, res) => {
     // Prefer a text-ish field for the row label so the Generate page's
     // record picker shows something human-readable instead of raw ids.
     const labelField = fields.find((f) => f.type === 1) ?? fields[0];
+    // ?debug=true includes each record's raw, unprocessed field values -
+    // handy for diagnosing "the generated value doesn't match Lark" type
+    // reports (date/timezone encoding, unexpected field shapes, etc.)
+    // without needing to dig through browser devtools.
+    const debug = req.query.debug === "true";
     const items = records.map((r) => {
       const raw = labelField ? r.fields[labelField.field_name] : undefined;
       const label = summarizeForLabel(raw) || r.record_id;
-      return { recordId: r.record_id, label };
+      return { recordId: r.record_id, label, ...(debug ? { rawFields: r.fields } : {}) };
     });
     res.json({ records: items, total: items.length });
   } catch (err) {
