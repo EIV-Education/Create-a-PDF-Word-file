@@ -54,11 +54,23 @@ function isImageAttachment(name: string, type?: string): boolean {
   return IMAGE_EXT.test(name);
 }
 
-/** Formats a Lark date/time value (epoch millis) using a fixed, locale-stable format. */
+/**
+ * Formats a Lark date/time value (epoch millis) using a fixed,
+ * locale-stable format.
+ *
+ * Lark's date-only fields encode the selected calendar day as UTC
+ * midnight of that day, regardless of the tenant's own timezone - so it
+ * must be read back with the UTC getters. Using the local getters here
+ * was a real production bug: on any server whose local timezone isn't
+ * UTC (e.g. a US-region host), every date rendered one day early
+ * (06/07/1994 -> 05/07/1994) because midnight UTC on the 6th is still
+ * the evening of the 5th in a negative-offset timezone. UTC getters give
+ * the correct date no matter what timezone the server process runs in.
+ */
 function formatDate(ms: number): string {
   const d = new Date(ms);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
 }
 
 /**

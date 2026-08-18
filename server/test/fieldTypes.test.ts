@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { normalizeFieldValue, fieldTypeLabel } from "../src/lark/fieldTypes.js";
 
 describe("fieldTypeLabel", () => {
@@ -83,5 +83,27 @@ describe("normalizeFieldValue", () => {
   it("returns empty string for null/undefined", () => {
     expect(normalizeFieldValue(1, null).value).toBe("");
     expect(normalizeFieldValue(1, undefined).value).toBe("");
+  });
+
+  describe("date formatting is timezone-independent (regression: dates rendered one day early)", () => {
+    const originalTz = process.env.TZ;
+
+    afterEach(() => {
+      process.env.TZ = originalTz;
+    });
+
+    it("formats a date field's UTC-midnight timestamp correctly regardless of the server's local timezone", () => {
+      // Lark encodes a date-only field as UTC midnight of the selected
+      // day. Production symptom: on a server whose local timezone isn't
+      // UTC, every date rendered one day early (06/07/1994 -> 05/07/1994)
+      // because reading UTC-midnight-of-the-6th via *local* getters lands
+      // on the evening of the 5th in any negative-offset timezone.
+      const ms = Date.UTC(1994, 6, 6, 0, 0, 0); // 06/07/1994
+
+      for (const tz of ["UTC", "America/Los_Angeles", "Asia/Ho_Chi_Minh", "Pacific/Kiritimati"]) {
+        process.env.TZ = tz;
+        expect(normalizeFieldValue(5, ms).value, `with TZ=${tz}`).toBe("06/07/1994");
+      }
+    });
   });
 });
