@@ -1,0 +1,49 @@
+# Render Blueprint — optional one-shot setup ("New +" -> "Blueprint" in the
+# Render dashboard, point it at this repo). If the Blueprint fails to parse
+# on your Render account (schema changes over time), just follow the manual
+# dashboard steps in docs/DEPLOY_RENDER.md instead — it's the more reliable
+# path and covers the same setup click-by-click.
+#
+# Secrets (LARK_APP_ID, LARK_APP_SECRET, WEBHOOK_API_KEY) are intentionally
+# left for you to fill in from the Render dashboard after the services are
+# created (sync: false) rather than stored here.
+services:
+  - type: web
+    name: lark-docgen-server
+    runtime: docker
+    dockerfilePath: server/Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /api/health
+    disk:
+      name: lark-docgen-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /data/data
+      - key: FILES_DIR
+        value: /data/storage-files
+      - key: LARK_DOMAIN
+        value: https://open.larksuite.com
+      - key: LARK_APP_ID
+        sync: false
+      - key: LARK_APP_SECRET
+        sync: false
+      - key: WEBHOOK_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: "*"
+
+  - type: web
+    name: lark-docgen-web
+    runtime: static
+    buildCommand: npm install && npm run build --workspace web
+    staticPublishPath: web/dist
+    envVars:
+      # Set this to https://lark-docgen-server.onrender.com (or your
+      # server service's actual URL) once it exists, then redeploy.
+      - key: VITE_API_BASE_URL
+        sync: false

@@ -49,6 +49,7 @@ npm run dev:web                   # http://localhost:5173 (proxies /api to :4000
 ```
 
 Full walkthrough (creating the Lark app, permissions, deploying): [docs/SETUP.md](docs/SETUP.md).
+Deploying to Render (Docker + LibreOffice, persistent storage): [docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md).
 
 ## How it fits together
 
