@@ -2,6 +2,24 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 /**
+ * The storage shape every collection-like store implements, regardless of
+ * backend. `JsonCollection` below is the local-disk implementation;
+ * `storage/larkCollection.ts` implements the same interface backed by Lark
+ * Base records, so callers (routes/*) don't need to know or care which one
+ * they're talking to.
+ */
+export interface Collection<T extends { id: string }> {
+  all(): Promise<T[]>;
+  find(predicate: (item: T) => boolean): Promise<T[]>;
+  findOne(predicate: (item: T) => boolean): Promise<T | undefined>;
+  get(id: string): Promise<T | undefined>;
+  insert(item: T): Promise<T>;
+  update(id: string, patch: Partial<T>): Promise<T | undefined>;
+  replace(id: string, next: T): Promise<T>;
+  remove(id: string): Promise<boolean>;
+}
+
+/**
  * Minimal dependency-free JSON-file-backed collection store.
  *
  * This keeps the MVP free of native-module database dependencies (no
@@ -10,7 +28,7 @@ import path from "node:path";
  * requests never interleave a write. For real production scale, swap this
  * for Postgres/SQLite behind the same `Collection<T>` interface.
  */
-export class JsonCollection<T extends { id: string }> {
+export class JsonCollection<T extends { id: string }> implements Collection<T> {
   private filePath: string;
   private cache: T[] | null = null;
   private loadingPromise: Promise<T[]> | null = null;

@@ -27,6 +27,11 @@ export const config = {
     domain: process.env.LARK_DOMAIN ?? "https://open.larksuite.com",
     appId: process.env.LARK_APP_ID ?? "",
     appSecret: process.env.LARK_APP_SECRET ?? "",
+    // App Token of a Base your Lark app can write to, used to store the
+    // app's own config (uploaded templates + field mappings) as Base
+    // records instead of on local disk. When unset, falls back to the
+    // local JSON-file store (server/src/storage/jsonStore.ts).
+    configAppToken: process.env.LARK_CONFIG_APP_TOKEN ?? "",
   },
 
   outputs: {

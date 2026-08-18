@@ -170,6 +170,7 @@ export interface SettingsResponse {
   larkConfigured: boolean;
   pdfConversionAvailable: boolean;
   webhookPath: string;
+  configStoreMode: "lark" | "local";
 }
 
 export function subscribeJob(jobId: string, onUpdate: (job: Job) => void): () => void {

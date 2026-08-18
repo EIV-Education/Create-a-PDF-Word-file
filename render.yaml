@@ -4,26 +4,24 @@
 # dashboard steps in docs/DEPLOY_RENDER.md instead — it's the more reliable
 # path and covers the same setup click-by-click.
 #
-# Secrets (LARK_APP_ID, LARK_APP_SECRET, WEBHOOK_API_KEY) are intentionally
-# left for you to fill in from the Render dashboard after the services are
-# created (sync: false) rather than stored here.
+# Secrets (LARK_APP_ID, LARK_APP_SECRET, LARK_CONFIG_APP_TOKEN,
+# WEBHOOK_API_KEY) are intentionally left for you to fill in from the
+# Render dashboard after the services are created (sync: false) rather
+# than stored here.
 services:
   - type: web
     name: lark-docgen-server
     runtime: docker
     dockerfilePath: server/Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     healthCheckPath: /api/health
-    # Optional: generated documents auto-upload to Lark and don't need
-    # server-side storage (the local copy is short-lived scratch space,
-    # auto-deleted after OUTPUT_FILE_TTL_HOURS). Uncomment this block --
-    # and add matching DATA_DIR/FILES_DIR env vars below -- only if you
-    # want your uploaded templates and saved mappings to survive redeploys.
-    # disk:
-    #   name: lark-docgen-data
-    #   mountPath: /data
-    #   sizeGB: 1
+    # No persistent disk needed: generated documents auto-upload to Lark
+    # (server keeps only a short-lived copy, auto-deleted after
+    # OUTPUT_FILE_TTL_HOURS), and templates/mappings are stored as records
+    # in your LARK_CONFIG_APP_TOKEN Base instead of local disk. Switch
+    # `plan` to `starter` if you'd rather avoid Free's spin-down-when-idle
+    # behavior (matters for webhook response time).
     envVars:
       - key: NODE_ENV
         value: production
@@ -32,6 +30,8 @@ services:
       - key: LARK_APP_ID
         sync: false
       - key: LARK_APP_SECRET
+        sync: false
+      - key: LARK_CONFIG_APP_TOKEN
         sync: false
       - key: WEBHOOK_API_KEY
         sync: false

@@ -85,6 +85,9 @@ export const en = {
   "settings.pdfStatus": "PDF conversion (LibreOffice)",
   "settings.pdfAvailable": "Available",
   "settings.pdfUnavailable": "Unavailable — install LibreOffice on the server.",
+  "settings.configStore": "Templates & mappings storage",
+  "settings.configStoreLark": "Stored in your Lark Base — survives redeploys, no disk needed.",
+  "settings.configStoreLocal": "Stored on this server's disk — lost on redeploy unless that disk is persistent. Set LARK_CONFIG_APP_TOKEN to store them in Lark instead.",
 
   "common.loading": "Loading...",
   "common.error": "Something went wrong.",

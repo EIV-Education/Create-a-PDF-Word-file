@@ -81,6 +81,21 @@ export function SettingsPage() {
       </div>
 
       <div className="card">
+        <h2>{t("settings.configStore")}</h2>
+        {settings.configStoreMode === "lark" ? (
+          <>
+            <span className="badge success">Lark Base</span>
+            <p className="muted">{t("settings.configStoreLark")}</p>
+          </>
+        ) : (
+          <>
+            <span className="badge">Local disk</span>
+            <p className="muted">{t("settings.configStoreLocal")}</p>
+          </>
+        )}
+      </div>
+
+      <div className="card">
         <h2>{t("settings.pdfStatus")}</h2>
         {settings.pdfConversionAvailable ? (
           <span className="badge success">{t("settings.pdfAvailable")}</span>

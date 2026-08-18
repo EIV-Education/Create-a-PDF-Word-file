@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getSettings, regenerateApiKey, setLanguage } from "../settings.js";
 import { larkClient } from "../lark/client.js";
 import { isPdfConversionAvailable } from "../pdf/convert.js";
+import { configStoreMode } from "../db.js";
 
 export const settingsRouter = Router();
 
@@ -17,6 +18,11 @@ settingsRouter.get("/", async (_req, res) => {
     larkConfigured,
     pdfConversionAvailable: pdfAvailable,
     webhookPath: "/api/webhook/generate",
+    // "lark": templates + mappings are stored as Base records
+    // (LARK_CONFIG_APP_TOKEN is set) and survive redeploys with no disk.
+    // "local": stored on this server's disk (server/data) - lost on
+    // redeploy unless that path is on a persistent volume.
+    configStoreMode,
   });
 });
 

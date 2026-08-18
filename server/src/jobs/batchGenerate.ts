@@ -6,7 +6,8 @@ import { renderDocx, prepareImageAsset, ImageAsset, TemplateRenderError } from "
 import { compressDocxImages } from "../template/imageCompress.js";
 import { renderFilename } from "../template/filename.js";
 import { convertDocxToPdf, PdfConversionError } from "../pdf/convert.js";
-import { templateFiles, outputFiles } from "../storage/fileStore.js";
+import { outputFiles } from "../storage/fileStore.js";
+import { templateFileStorage } from "../storage/templateFileStorage.js";
 import { outputFilesMetaDb } from "../db.js";
 import { appendResult, createJob, finishJob, markRunning } from "./jobManager.js";
 import { config } from "../config.js";
@@ -58,7 +59,7 @@ async function runBatchJob(jobId: string, params: RunBatchParams): Promise<void>
     return;
   }
 
-  const templateBuffer = await templateFiles.read(template.fileId);
+  const templateBuffer = await templateFileStorage.read(template.fileId);
   const records = await larkClient.listRecords(mapping.larkAppToken, mapping.larkTableId, { recordIds });
   const byId = new Map(records.map((r) => [r.record_id, r]));
 

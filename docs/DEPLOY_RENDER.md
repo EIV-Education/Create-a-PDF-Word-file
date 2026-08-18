@@ -13,20 +13,15 @@ to this if it doesn't).
    - **Root Directory**: leave blank (repo root — needed because this is an npm-workspaces
      monorepo; the Dockerfile reads the root `package-lock.json`).
    - **Dockerfile Path**: `server/Dockerfile`
-5. **Instance type**: **Starter** is enough (Free spins down after inactivity, which delays
-   webhook responses from Lark Base Automation — see "Costs" below).
-6. **Persistent disk — optional.** Generated documents (the .docx/.pdf files) are *not* meant to
-   live on this server permanently: each one auto-uploads to the Lark attachment field you
-   configure on its mapping, and the server's own copy is just short-lived scratch space for the
-   UI's "download" link (auto-deleted after `OUTPUT_FILE_TTL_HOURS`, default 24h) — so it never
-   needs a growing disk.
-   The one thing that *does* benefit from persisting is your setup itself — uploaded templates and
-   saved field mappings (a few KB total). Without a disk, a redeploy/restart wipes that config and
-   you'd re-upload the template + redo the mapping (a couple of minutes). Your call:
-   - **Skip the disk** → stay on Free/no-disk, simplest and cheapest, just re-set-up after deploys.
-   - **Add a small disk** (Advanced → Add Disk: name `lark-docgen-data`, mount path `/data`, size
-     1 GB) → your template/mapping setup survives redeploys too. If you do this, also set
-     `DATA_DIR=/data/data` and `FILES_DIR=/data/storage-files` in step 7 so it actually uses the disk.
+5. **Instance type**: **Free** works — no persistent disk needed at all (see next step). Note
+   Free spins down after inactivity and takes a few seconds to wake up on the next request, which
+   delays webhook responses from Lark Base Automation; pick **Starter** instead if that matters.
+6. **No persistent disk needed.** Two kinds of data used to need one; neither does now:
+   - Generated documents (.docx/.pdf) auto-upload to the Lark attachment field configured on each
+     mapping — the server's own copy is short-lived scratch space for the UI's "download" link,
+     auto-deleted after `OUTPUT_FILE_TTL_HOURS` (default 24h).
+   - Uploaded templates and saved field mappings are stored as records in a Lark Base (see
+     `LARK_CONFIG_APP_TOKEN` below, from [docs/SETUP.md](SETUP.md) step 2) instead of local disk.
 7. **Environment variables**:
 
    | Key | Value |
@@ -35,9 +30,9 @@ to this if it doesn't).
    | `LARK_DOMAIN` | `https://open.larksuite.com` (or `https://open.feishu.cn` for Feishu) |
    | `LARK_APP_ID` | your Lark custom app's App ID |
    | `LARK_APP_SECRET` | your Lark custom app's App Secret |
-   | `WEBHOOK_API_KEY` | leave unset — the server generates one on first boot, viewable/regeneratable from the Settings page |
+   | `LARK_CONFIG_APP_TOKEN` | App Token of your "DocGen Config" Base (docs/SETUP.md step 2) — this is what makes templates/mappings survive redeploys with no disk |
+   | `WEBHOOK_API_KEY` | pick a fixed value yourself so it stays stable across restarts (leaving it unset auto-generates one, but that resets on every restart since there's no disk to remember it on) |
    | `CORS_ORIGIN` | the frontend's URL once you have it (step 2); `*` works temporarily |
-   | `DATA_DIR` / `FILES_DIR` | only if you added the disk (step 6) — `/data/data` and `/data/storage-files` |
 
 8. **Health check path**: `/api/health`.
 9. **Create Web Service** and wait for the first build (installing LibreOffice takes a few
@@ -47,7 +42,13 @@ to this if it doesn't).
     curl https://lark-docgen-server.onrender.com/api/health
     curl https://lark-docgen-server.onrender.com/api/settings
     ```
-    `larkConfigured` should read `true` and `pdfConversionAvailable` should read `true`.
+    `larkConfigured` should read `true`, `pdfConversionAvailable` should read `true`, and
+    `configStoreMode` should read `"lark"` (confirms it's using the config Base, not local disk).
+
+    Still want a disk anyway (e.g. you skipped `LARK_CONFIG_APP_TOKEN`)? Add one under Advanced →
+    Add Disk (mount path `/data`, 1 GB), then set `DATA_DIR=/data/data` and
+    `FILES_DIR=/data/storage-files` — this requires the Starter plan or higher (Free doesn't
+    support disks).
 
 ## 2. Frontend (the `web/` UI)
 

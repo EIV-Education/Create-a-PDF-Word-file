@@ -74,9 +74,13 @@ npm test   # server unit tests (vitest): template engine, filename rendering,
 
 ## Notes on the current implementation
 
-- **Storage** is a small dependency-free JSON-file store (`server/src/storage/jsonStore.ts`) plus
-  flat files on disk — no database server to stand up for the MVP. Swap it for Postgres/SQLite
-  behind the same `JsonCollection<T>`-shaped interface for real production scale/concurrency.
+- **Storage**: uploaded templates and saved field mappings are stored either locally (a small
+  dependency-free JSON-file store, `server/src/storage/jsonStore.ts` — no database server to stand
+  up) or, when `LARK_CONFIG_APP_TOKEN` is set, as records in a Lark Base instead
+  (`server/src/storage/larkCollection.ts`) — no disk needed at all, handy on hosts without a
+  persistent volume (see docs/DEPLOY_RENDER.md). Generated documents themselves auto-upload to
+  whatever Lark attachment field a mapping targets; the server only keeps a short-lived local copy
+  for the UI's download link, auto-deleted after `OUTPUT_FILE_TTL_HOURS`.
 - **PDF conversion** shells out to headless LibreOffice (`soffice --headless --convert-to pdf`).
   Install LibreOffice on whatever machine runs `server/`.
 - **Lark vs Feishu** — set `LARK_DOMAIN` to `https://open.larksuite.com` (Lark, global) or

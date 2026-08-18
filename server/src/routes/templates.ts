@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { randomUUID } from "node:crypto";
 import { templatesDb } from "../db.js";
-import { templateFiles } from "../storage/fileStore.js";
+import { templateFileStorage } from "../storage/templateFileStorage.js";
 import { extractPlaceholders } from "../template/placeholders.js";
 import type { TemplateRecord } from "../models.js";
 
@@ -43,15 +43,14 @@ templatesRouter.post("/", upload.single("file"), async (req, res) => {
     return;
   }
 
-  const id = randomUUID();
-  await templateFiles.save(id, file.buffer);
+  const fileId = await templateFileStorage.save(file.buffer, file.originalname);
 
   const now = new Date().toISOString();
   const record: TemplateRecord = {
-    id,
+    id: randomUUID(),
     name: name ?? file.originalname,
     originalFilename: file.originalname,
-    fileId: id,
+    fileId,
     placeholders,
     sizeBytes: file.buffer.length,
     createdAt: now,
@@ -67,7 +66,7 @@ templatesRouter.get("/:id/download", async (req, res) => {
     res.status(404).json({ error: req.t("errors.templateNotFound") });
     return;
   }
-  const buffer = await templateFiles.read(template.fileId);
+  const buffer = await templateFileStorage.read(template.fileId);
   res.setHeader("Content-Type", DOCX_MIME);
   res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(template.originalFilename)}"`);
   res.send(buffer);
@@ -79,7 +78,7 @@ templatesRouter.delete("/:id", async (req, res) => {
     res.status(404).json({ error: req.t("errors.templateNotFound") });
     return;
   }
-  await templateFiles.remove(template.fileId);
+  await templateFileStorage.remove(template.fileId);
   await templatesDb.remove(template.id);
   res.status(204).end();
 });

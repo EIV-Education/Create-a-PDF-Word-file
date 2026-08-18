@@ -87,6 +87,9 @@ export const vi: Record<TranslationKey, string> = {
   "settings.pdfStatus": "Chuyển đổi PDF (LibreOffice)",
   "settings.pdfAvailable": "Sẵn sàng",
   "settings.pdfUnavailable": "Không khả dụng — hãy cài đặt LibreOffice trên máy chủ.",
+  "settings.configStore": "Lưu trữ mẫu & ánh xạ",
+  "settings.configStoreLark": "Lưu trong Lark Base của bạn — không mất khi redeploy, không cần ổ đĩa.",
+  "settings.configStoreLocal": "Lưu trên đĩa của máy chủ này — sẽ mất khi redeploy nếu đĩa không phải loại lưu trữ lâu dài. Đặt LARK_CONFIG_APP_TOKEN để lưu vào Lark thay vì đĩa.",
 
   "common.loading": "Đang tải...",
   "common.error": "Đã xảy ra lỗi.",

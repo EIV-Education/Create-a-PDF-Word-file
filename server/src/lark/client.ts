@@ -191,6 +191,48 @@ export class LarkClient {
     if (data.code !== 0) throw new Error(`updateRecordField failed: ${data.msg}`);
   }
 
+  async createRecord(appToken: string, tableId: string, fields: Record<string, unknown>): Promise<string> {
+    const headers = await this.authedHeaders({ "Content-Type": "application/json" });
+    const { data } = await this.http.post(
+      `/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`,
+      { fields },
+      { headers }
+    );
+    if (data.code !== 0) throw new Error(`createRecord failed: ${data.msg}`);
+    return data.data.record.record_id as string;
+  }
+
+  async deleteRecord(appToken: string, tableId: string, recordId: string): Promise<void> {
+    const headers = await this.authedHeaders();
+    const { data } = await this.http.delete(
+      `/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records/${recordId}`,
+      { headers }
+    );
+    if (data.code !== 0) throw new Error(`deleteRecord failed: ${data.msg}`);
+  }
+
+  /** Best-effort delete of a file previously returned by uploadMedia. */
+  async deleteMedia(fileToken: string): Promise<void> {
+    const headers = await this.authedHeaders();
+    const { data } = await this.http.delete(`/open-apis/drive/v1/files/${fileToken}`, {
+      headers,
+      params: { type: "bitable_file" },
+    });
+    if (data.code !== 0) throw new Error(`deleteMedia failed: ${data.msg}`);
+  }
+
+  /** Creates a Bitable table with the given plain-text fields (type 1 = text). */
+  async createTable(appToken: string, name: string, fields: Array<{ field_name: string; type: number }>): Promise<string> {
+    const headers = await this.authedHeaders({ "Content-Type": "application/json" });
+    const { data } = await this.http.post(
+      `/open-apis/bitable/v1/apps/${appToken}/tables`,
+      { table: { name, fields } },
+      { headers }
+    );
+    if (data.code !== 0) throw new Error(`createTable failed: ${data.msg}`);
+    return data.data.table_id as string;
+  }
+
   async listTables(appToken: string): Promise<Array<{ table_id: string; name: string }>> {
     const headers = await this.authedHeaders();
     const tables: Array<{ table_id: string; name: string }> = [];
