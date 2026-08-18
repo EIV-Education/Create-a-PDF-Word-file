@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { mappingsDb, templatesDb } from "../db.js";
 import { larkClient } from "../lark/client.js";
 import { slugifyFieldNames } from "../utils/slugify.js";
+import { suggestFieldMatches } from "../mapping/autoMatch.js";
 import type { FieldMappingEntry, MappingRecord, OutputFormat } from "../models.js";
 
 export const mappingsRouter = Router();
@@ -42,21 +43,11 @@ mappingsRouter.get("/suggest/:templateId", async (req, res) => {
   }
 
   const fields = await larkClient.listFields(appToken, tableId);
+  // suggestedTag (display only, on availableFields) is a distinct concern
+  // from matching: it's "what tag would this field suggest", not part of
+  // the actual match comparison (see mapping/autoMatch.ts).
   const tagByFieldName = slugifyFieldNames(fields.map((f) => f.field_name));
-
-  const suggestions: FieldMappingEntry[] = [];
-  for (const placeholder of template.placeholders) {
-    if (placeholder.kind === "section") continue;
-    const match = fields.find((f) => tagByFieldName.get(f.field_name) === placeholder.name);
-    if (!match) continue;
-    suggestions.push({
-      tag: placeholder.name,
-      larkFieldId: match.field_id,
-      larkFieldName: match.field_name,
-      larkFieldType: match.type,
-      kind: placeholder.kind === "image" ? "image" : placeholder.kind === "loop" ? "loop" : "value",
-    });
-  }
+  const suggestions = suggestFieldMatches(template.placeholders, fields);
 
   res.json({ suggestions, availableFields: fields.map((f) => ({ ...f, suggestedTag: tagByFieldName.get(f.field_name) })) });
 });
