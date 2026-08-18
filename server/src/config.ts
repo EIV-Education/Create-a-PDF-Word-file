@@ -29,6 +29,14 @@ export const config = {
     appSecret: process.env.LARK_APP_SECRET ?? "",
   },
 
+  outputs: {
+    // Generated documents are meant to land in Lark's attachment field
+    // (the permanent copy) — the server only keeps its own copy around
+    // briefly, to power the "download" link right after generation.
+    // A background sweep deletes anything older than this.
+    ttlHours: Number(process.env.OUTPUT_FILE_TTL_HOURS ?? 24),
+  },
+
   pdf: {
     // Path/command used to invoke LibreOffice headless for docx -> pdf conversion.
     sofficeBin: process.env.SOFFICE_BIN ?? "soffice",

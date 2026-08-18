@@ -13,28 +13,32 @@ to this if it doesn't).
    - **Root Directory**: leave blank (repo root — needed because this is an npm-workspaces
      monorepo; the Dockerfile reads the root `package-lock.json`).
    - **Dockerfile Path**: `server/Dockerfile`
-5. **Instance type**: pick **Starter** or higher. The **Free** instance type does *not* support
-   persistent disks, and this app needs one (see next step) — on Free, every deploy/restart wipes
-   your uploaded templates and generated files.
-6. **Add a persistent disk** (Advanced → Add Disk):
-   - Name: `lark-docgen-data`
-   - Mount path: `/data`
-   - Size: 1 GB is plenty to start; grow it later if you generate a lot of documents.
+5. **Instance type**: **Starter** is enough (Free spins down after inactivity, which delays
+   webhook responses from Lark Base Automation — see "Costs" below).
+6. **Persistent disk — optional.** Generated documents (the .docx/.pdf files) are *not* meant to
+   live on this server permanently: each one auto-uploads to the Lark attachment field you
+   configure on its mapping, and the server's own copy is just short-lived scratch space for the
+   UI's "download" link (auto-deleted after `OUTPUT_FILE_TTL_HOURS`, default 24h) — so it never
+   needs a growing disk.
+   The one thing that *does* benefit from persisting is your setup itself — uploaded templates and
+   saved field mappings (a few KB total). Without a disk, a redeploy/restart wipes that config and
+   you'd re-upload the template + redo the mapping (a couple of minutes). Your call:
+   - **Skip the disk** → stay on Free/no-disk, simplest and cheapest, just re-set-up after deploys.
+   - **Add a small disk** (Advanced → Add Disk: name `lark-docgen-data`, mount path `/data`, size
+     1 GB) → your template/mapping setup survives redeploys too. If you do this, also set
+     `DATA_DIR=/data/data` and `FILES_DIR=/data/storage-files` in step 7 so it actually uses the disk.
 7. **Environment variables**:
 
    | Key | Value |
    |---|---|
    | `NODE_ENV` | `production` |
-   | `DATA_DIR` | `/data/data` |
-   | `FILES_DIR` | `/data/storage-files` |
    | `LARK_DOMAIN` | `https://open.larksuite.com` (or `https://open.feishu.cn` for Feishu) |
    | `LARK_APP_ID` | your Lark custom app's App ID |
    | `LARK_APP_SECRET` | your Lark custom app's App Secret |
    | `WEBHOOK_API_KEY` | leave unset — the server generates one on first boot, viewable/regeneratable from the Settings page |
    | `CORS_ORIGIN` | the frontend's URL once you have it (step 2); `*` works temporarily |
+   | `DATA_DIR` / `FILES_DIR` | only if you added the disk (step 6) — `/data/data` and `/data/storage-files` |
 
-   **`DATA_DIR`/`FILES_DIR` must point under `/data`** (the mounted disk) — this is what makes
-   your templates, mappings and generated files survive redeploys and restarts.
 8. **Health check path**: `/api/health`.
 9. **Create Web Service** and wait for the first build (installing LibreOffice takes a few
    minutes). Once live, note the service URL, e.g. `https://lark-docgen-server.onrender.com`.
@@ -73,8 +77,17 @@ by the API key). That's fine while you're the only one with the URL, but conside
 frontend behind your team's SSO/VPN, or ask for a basic shared-password gate to be added, before
 sharing the URL more widely.
 
+## Making sure documents actually land in Lark
+
+The whole point of skipping server-side storage is that every generated file ends up in Lark, so
+double check on the **Field Mapping** screen that **"Write generated file(s) back to this
+attachment field"** is set to a real attachment field for every mapping you use — that's what
+makes generation auto-save into Lark instead of only sitting in the (short-lived, auto-deleted)
+local copy.
+
 ## Costs & always-on behavior
 
-Render's Starter plan (needed for the disk) keeps the service running continuously — it won't
-spin down between requests, which matters if you want webhook calls from Lark Base Automation to
-respond promptly at any hour. Check Render's current pricing page for the Starter tier's cost.
+Render's Starter plan keeps the service running continuously — it won't spin down between
+requests, which matters if you want webhook calls from Lark Base Automation to respond promptly at
+any hour. Free-tier services spin down after inactivity and take a few seconds to wake back up on
+the next request. Check Render's current pricing page for exact costs.

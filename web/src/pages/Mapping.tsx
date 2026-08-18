@@ -326,6 +326,7 @@ export function MappingPage({ initialTemplateId }: { initialTemplateId: string |
                   </option>
                 ))}
               </select>
+              <span className="help">{t("mapping.writeBackHelp")}</span>
             </div>
             <div className="field">
               <label>{t("mapping.deliveryWebhook")}</label>

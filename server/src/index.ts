@@ -9,6 +9,7 @@ import { generateRouter } from "./routes/generate.js";
 import { webhookRouter } from "./routes/webhook.js";
 import { larkRouter } from "./routes/lark.js";
 import { settingsRouter } from "./routes/settings.js";
+import { scheduleOutputCleanup } from "./jobs/cleanup.js";
 
 export function createApp() {
   const app = express();
@@ -45,4 +46,7 @@ if (process.env.VITEST !== "true") {
   app.listen(config.port, () => {
     console.log(`Lark DocGen server listening on port ${config.port}`);
   });
+  // Local copies of generated documents are scratch space, not the
+  // permanent store (that's Lark's attachment field) — sweep stale ones.
+  scheduleOutputCleanup();
 }

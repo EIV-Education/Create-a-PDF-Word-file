@@ -46,6 +46,7 @@ export const en = {
   "mapping.format.both": "Word + PDF",
   "mapping.compressImages": "Compress images to reduce file size",
   "mapping.writeBack": "Write generated file(s) back to this attachment field",
+  "mapping.writeBackHelp": "This is the permanent copy — set it so every generated file lands in Lark automatically. The server only keeps a short-lived copy for the download link on the Generate page.",
   "mapping.writeBackNone": "— do not write back —",
   "mapping.deliveryWebhook": "Also send a copy to an external URL (optional)",
   "mapping.mappingName": "Mapping name",

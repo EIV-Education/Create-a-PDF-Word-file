@@ -15,17 +15,18 @@ services:
     dockerContext: .
     plan: starter
     healthCheckPath: /api/health
-    disk:
-      name: lark-docgen-data
-      mountPath: /data
-      sizeGB: 1
+    # Optional: generated documents auto-upload to Lark and don't need
+    # server-side storage (the local copy is short-lived scratch space,
+    # auto-deleted after OUTPUT_FILE_TTL_HOURS). Uncomment this block --
+    # and add matching DATA_DIR/FILES_DIR env vars below -- only if you
+    # want your uploaded templates and saved mappings to survive redeploys.
+    # disk:
+    #   name: lark-docgen-data
+    #   mountPath: /data
+    #   sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATA_DIR
-        value: /data/data
-      - key: FILES_DIR
-        value: /data/storage-files
       - key: LARK_DOMAIN
         value: https://open.larksuite.com
       - key: LARK_APP_ID

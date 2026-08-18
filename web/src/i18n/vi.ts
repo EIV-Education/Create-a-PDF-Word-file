@@ -48,6 +48,7 @@ export const vi: Record<TranslationKey, string> = {
   "mapping.format.both": "Word + PDF",
   "mapping.compressImages": "Nén hình ảnh để giảm dung lượng tệp",
   "mapping.writeBack": "Ghi tệp đã tạo trở lại trường tệp đính kèm này",
+  "mapping.writeBackHelp": "Đây là bản lưu vĩnh viễn — hãy chọn trường này để mọi tài liệu tạo ra tự động lưu vào Lark. Máy chủ chỉ giữ bản tạm để phục vụ liên kết tải xuống ở trang Tạo tài liệu.",
   "mapping.writeBackNone": "— không ghi lại —",
   "mapping.deliveryWebhook": "Đồng thời gửi bản sao tới một URL bên ngoài (tùy chọn)",
   "mapping.mappingName": "Tên cấu hình ánh xạ",
