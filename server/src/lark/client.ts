@@ -64,6 +64,22 @@ export class LarkClient {
     private domain: string = config.lark.domain
   ) {
     this.http = axios.create({ baseURL: this.domain, timeout: 30_000 });
+    // Axios throws for non-2xx responses with a generic "Request failed
+    // with status code N" message by default, discarding the response
+    // body — which for Lark's API is where the actually useful `code`/
+    // `msg` (and often a `error.field_violations` detail) live. Surface
+    // that instead so failures are diagnosable from a server log line or
+    // an API error response, not just "status code 400".
+    this.http.interceptors.response.use(undefined, (err) => {
+      if (err.response) {
+        const body = err.response.data;
+        const detail = typeof body === "string" ? body : JSON.stringify(body);
+        return Promise.reject(
+          new Error(`Lark API request failed (HTTP ${err.response.status}) at ${err.config?.url}: ${detail}`)
+        );
+      }
+      return Promise.reject(err);
+    });
   }
 
   isConfigured(): boolean {
