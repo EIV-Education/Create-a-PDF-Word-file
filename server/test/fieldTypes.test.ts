@@ -12,8 +12,21 @@ describe("fieldTypeLabel", () => {
 });
 
 describe("normalizeFieldValue", () => {
-  it("passes text through", () => {
+  it("passes a plain string through for a text field", () => {
     expect(normalizeFieldValue(1, "hello")).toEqual({ value: "hello", attachments: [] });
+  });
+
+  it("extracts text from Lark's actual rich-text-segment shape for text fields (regression: was rendering raw JSON)", () => {
+    const { value } = normalizeFieldValue(1, [{ text: "PHẠM HỒNG SƠN", type: "text" }]);
+    expect(value).toBe("PHẠM HỒNG SƠN");
+  });
+
+  it("concatenates multiple rich-text segments (e.g. mixed formatting/mentions)", () => {
+    const { value } = normalizeFieldValue(1, [
+      { text: "Hello ", type: "text" },
+      { text: "World", type: "text" },
+    ]);
+    expect(value).toBe("Hello World");
   });
 
   it("coerces numbers", () => {
@@ -47,6 +60,24 @@ describe("normalizeFieldValue", () => {
   it("unwraps lookup values", () => {
     const { value } = normalizeFieldValue(19, { type: 1, value: [{ text: "Foo" }, { text: "Bar" }] });
     expect(value).toEqual(["Foo", "Bar"]);
+  });
+
+  it("unwraps a lookup over a text field (nested rich-text segments)", () => {
+    const { value } = normalizeFieldValue(19, {
+      type: 1,
+      value: [[{ text: "Foo", type: "text" }], [{ text: "Bar", type: "text" }]],
+    });
+    expect(value).toEqual(["Foo", "Bar"]);
+  });
+
+  it("preserves numbers from a numeric formula result", () => {
+    const { value } = normalizeFieldValue(20, { type: 2, value: [42] });
+    expect(value).toEqual([42]);
+  });
+
+  it("extracts text for an unlisted/unknown field type via the same rich-text fallback", () => {
+    const { value } = normalizeFieldValue(13, [{ text: "0900000000", type: "text" }]);
+    expect(value).toBe("0900000000");
   });
 
   it("returns empty string for null/undefined", () => {
