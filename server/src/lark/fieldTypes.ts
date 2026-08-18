@@ -1,3 +1,5 @@
+import { config } from "../config.js";
+
 /**
  * Lark Bitable field type codes -> human labels, and value normalizers that
  * turn a raw record field value into something safe/useful to drop into a
@@ -58,19 +60,28 @@ function isImageAttachment(name: string, type?: string): boolean {
  * Formats a Lark date/time value (epoch millis) using a fixed,
  * locale-stable format.
  *
- * Lark's date-only fields encode the selected calendar day as UTC
- * midnight of that day, regardless of the tenant's own timezone - so it
- * must be read back with the UTC getters. Using the local getters here
- * was a real production bug: on any server whose local timezone isn't
- * UTC (e.g. a US-region host), every date rendered one day early
- * (06/07/1994 -> 05/07/1994) because midnight UTC on the 6th is still
- * the evening of the 5th in a negative-offset timezone. UTC getters give
- * the correct date no matter what timezone the server process runs in.
+ * Lark's date-only fields are anchored to midnight in the Base/tenant's
+ * *own* timezone, not UTC - confirmed against a real record: a field
+ * showing "07/07/1994" in the Lark UI returns the epoch for
+ * 1994-07-06T17:00:00Z, i.e. midnight Asia/Ho_Chi_Minh (UTC+7). Reading
+ * it back with the server's local getters (or UTC getters - an earlier,
+ * wrong fix) is only correct by coincidence if the server process
+ * happens to run in that same timezone; on Render (UTC) both gave
+ * "06/07/1994", one calendar day early. Converting explicitly to
+ * config.larkTimezone via Intl.DateTimeFormat is correct regardless of
+ * the server's own timezone.
  */
+const dateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: config.larkTimezone,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 function formatDate(ms: number): string {
-  const d = new Date(ms);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+  const parts = dateFormatter.formatToParts(new Date(ms));
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("day")}/${get("month")}/${get("year")}`;
 }
 
 /**

@@ -61,6 +61,16 @@ export const config = {
   },
 
   defaultLocale: (process.env.DEFAULT_LOCALE as "en" | "vi") ?? "en",
+
+  // Lark date-only fields are anchored to midnight in the Base/tenant's
+  // own timezone (confirmed empirically: a field showing "07/07/1994" in
+  // the UI returns the epoch for 1994-07-06T17:00:00Z, i.e. midnight
+  // Asia/Ho_Chi_Minh, UTC+7) - NOT UTC midnight. Reading it back with the
+  // server's local timezone (or UTC) getters is only correct by
+  // coincidence if the server happens to run in the same timezone as the
+  // Base, so it must be converted explicitly. Override if a mapping's
+  // Base is configured for a different timezone.
+  larkTimezone: process.env.LARK_TIMEZONE ?? "Asia/Ho_Chi_Minh",
 };
 
 export type AppConfig = typeof config;

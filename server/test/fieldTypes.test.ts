@@ -92,17 +92,19 @@ describe("normalizeFieldValue", () => {
       process.env.TZ = originalTz;
     });
 
-    it("formats a date field's UTC-midnight timestamp correctly regardless of the server's local timezone", () => {
-      // Lark encodes a date-only field as UTC midnight of the selected
-      // day. Production symptom: on a server whose local timezone isn't
-      // UTC, every date rendered one day early (06/07/1994 -> 05/07/1994)
-      // because reading UTC-midnight-of-the-6th via *local* getters lands
-      // on the evening of the 5th in any negative-offset timezone.
-      const ms = Date.UTC(1994, 6, 6, 0, 0, 0); // 06/07/1994
+    it("formats a real Lark date field value correctly regardless of the server's local timezone", () => {
+      // Verified against a real record: Lark's UI showed "07/07/1994" for
+      // this field, and the raw API value was 773514000000ms, which is
+      // 1994-07-06T17:00:00Z = midnight *Asia/Ho_Chi_Minh* (UTC+7) on the
+      // 7th - not UTC midnight (that would've been 773539200000). A
+      // server running in UTC (e.g. Render) reading this with either
+      // local or UTC getters lands on the 6th, one calendar day early;
+      // only converting to the Base's own timezone gives the 7th.
+      const ms = 773514000000;
 
       for (const tz of ["UTC", "America/Los_Angeles", "Asia/Ho_Chi_Minh", "Pacific/Kiritimati"]) {
         process.env.TZ = tz;
-        expect(normalizeFieldValue(5, ms).value, `with TZ=${tz}`).toBe("06/07/1994");
+        expect(normalizeFieldValue(5, ms).value, `with TZ=${tz}`).toBe("07/07/1994");
       }
     });
   });
