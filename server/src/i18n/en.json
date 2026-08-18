@@ -1,0 +1,17 @@
+{
+  "errors.unauthorized": "Missing or invalid API key.",
+  "errors.templateNotFound": "Template not found.",
+  "errors.mappingNotFound": "Field mapping not found.",
+  "errors.jobNotFound": "Job not found.",
+  "errors.invalidUpload": "Please upload a valid .docx file.",
+  "errors.larkNotConfigured": "Lark app credentials are not configured. Set LARK_APP_ID and LARK_APP_SECRET.",
+  "errors.pdfConversionFailed": "Could not convert the document to PDF. Make sure LibreOffice (soffice) is installed on the server.",
+  "errors.noRecordsSelected": "No records were selected for generation.",
+  "jobs.status.pending": "Pending",
+  "jobs.status.running": "Generating documents...",
+  "jobs.status.completed": "Completed",
+  "jobs.status.failed": "Failed",
+  "webhook.triggered": "Document generation triggered from Lark Base Automation.",
+  "template.uploaded": "Template uploaded successfully.",
+  "mapping.saved": "Field mapping saved."
+}

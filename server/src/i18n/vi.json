@@ -1,0 +1,17 @@
+{
+  "errors.unauthorized": "Thiếu hoặc sai khóa API.",
+  "errors.templateNotFound": "Không tìm thấy mẫu tài liệu.",
+  "errors.mappingNotFound": "Không tìm thấy cấu hình ánh xạ trường dữ liệu.",
+  "errors.jobNotFound": "Không tìm thấy tác vụ.",
+  "errors.invalidUpload": "Vui lòng tải lên tệp .docx hợp lệ.",
+  "errors.larkNotConfigured": "Chưa cấu hình thông tin ứng dụng Lark. Vui lòng đặt LARK_APP_ID và LARK_APP_SECRET.",
+  "errors.pdfConversionFailed": "Không thể chuyển đổi tài liệu sang PDF. Hãy đảm bảo LibreOffice (soffice) đã được cài đặt trên máy chủ.",
+  "errors.noRecordsSelected": "Chưa chọn bản ghi nào để tạo tài liệu.",
+  "jobs.status.pending": "Đang chờ",
+  "jobs.status.running": "Đang tạo tài liệu...",
+  "jobs.status.completed": "Hoàn tất",
+  "jobs.status.failed": "Thất bại",
+  "webhook.triggered": "Đã kích hoạt tạo tài liệu từ Lark Base Automation.",
+  "template.uploaded": "Tải mẫu lên thành công.",
+  "mapping.saved": "Đã lưu ánh xạ trường dữ liệu."
+}

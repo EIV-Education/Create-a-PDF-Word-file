@@ -1,0 +1,22 @@
+{
+  "name": "lark-docgen",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Document automation tool that turns Lark Base data into professional Word/PDF documents.",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace server",
+    "dev:web": "npm run dev --workspace web",
+    "build:server": "npm run build --workspace server",
+    "build:web": "npm run build --workspace web",
+    "test": "npm run test --workspace server",
+    "lint": "npm run lint --workspace server && npm run lint --workspace web"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

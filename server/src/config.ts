@@ -1,0 +1,53 @@
+import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SERVER_ROOT = path.resolve(__dirname, "..");
+
+function bool(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined) return fallback;
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+}
+
+export const config = {
+  port: Number(process.env.PORT ?? 4000),
+  nodeEnv: process.env.NODE_ENV ?? "development",
+
+  /** Root directory for the tiny JSON-file datastore (see storage/jsonStore.ts). */
+  dataDir: process.env.DATA_DIR ?? path.join(SERVER_ROOT, "data"),
+  /** Root directory for uploaded templates + generated documents. */
+  filesDir: process.env.FILES_DIR ?? path.join(SERVER_ROOT, "storage-files"),
+
+  /** Static API key clients must send as `X-API-Key` for /api/webhook/* calls. */
+  webhookApiKey: process.env.WEBHOOK_API_KEY ?? "",
+
+  lark: {
+    // "Lark" (global) vs "Feishu" (China) use different API hosts.
+    domain: process.env.LARK_DOMAIN ?? "https://open.larksuite.com",
+    appId: process.env.LARK_APP_ID ?? "",
+    appSecret: process.env.LARK_APP_SECRET ?? "",
+  },
+
+  pdf: {
+    // Path/command used to invoke LibreOffice headless for docx -> pdf conversion.
+    sofficeBin: process.env.SOFFICE_BIN ?? "soffice",
+    timeoutMs: Number(process.env.PDF_CONVERT_TIMEOUT_MS ?? 60_000),
+  },
+
+  images: {
+    compressionEnabledByDefault: bool(process.env.IMAGE_COMPRESSION_DEFAULT, true),
+    // Images wider/taller than this (px) get downscaled during compression.
+    maxDimension: Number(process.env.IMAGE_MAX_DIMENSION ?? 1600),
+    // JPEG/WebP quality (1-100) applied when re-encoding compressed images.
+    quality: Number(process.env.IMAGE_QUALITY ?? 78),
+  },
+
+  cors: {
+    origin: process.env.CORS_ORIGIN ?? "*",
+  },
+
+  defaultLocale: (process.env.DEFAULT_LOCALE as "en" | "vi") ?? "en",
+};
+
+export type AppConfig = typeof config;
